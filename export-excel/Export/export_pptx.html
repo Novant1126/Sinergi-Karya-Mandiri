@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Export PPTX</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <button id="export-btn">Export PPTX</button>
+
+    <script>
+        $(document).ready(function () {
+            $('#export-btn').click(function () {
+                $.ajax({
+                    url: 'generate_pptx.php',
+                    method: 'POST',
+                    success: function (response) {
+                        alert('File PPTX berhasil dibuat!');
+                        window.location.href = 'PPTX/Audit-1.pptx'; // Redirect untuk download file
+                    },
+                    error: function () {
+                        alert('Gagal membuat file PPTX.');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
