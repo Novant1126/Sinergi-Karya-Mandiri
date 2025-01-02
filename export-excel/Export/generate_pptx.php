@@ -1,122 +1,235 @@
 <?php
 require_once __DIR__ . '/../../vendor/autoload.php';
-
+include '../../../adam/Koneksi/Koneksi.php';
 use PhpOffice\PhpPresentation\PhpPresentation;
 use PhpOffice\PhpPresentation\IOFactory;
 use PhpOffice\PhpPresentation\Style\Color;
 use PhpOffice\PhpPresentation\DocumentLayout;
 use PhpOffice\PhpPresentation\Shape\RichText;
 use PhpOffice\PhpPresentation\Style\Alignment;
+//
+    // Koneksi ke database
+    // $host = 'localhost';
+    // $dbname = 'sinergi';
+    // $username = 'root';
+    // $password = '';
+    
+    // try {
+    //     $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
+    //     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    // } catch (PDOException $e) {
+    //     echo "Koneksi gagal: " . $e->getMessage();
+    //     exit;
+    // }
+    // Ambil ID gedung, tower, dan lift dari URL
+    // $id_gedung = isset($_GET['id_gedung']) ? $_GET['id_gedung'] : null;
+    // $id_towers = isset($_GET['id_tower']) ? explode(',', $_GET['id_tower']) : [];
+    // $id_lifts = isset($_GET['id_lift']) ? explode(',', $_GET['id_lift']) : [];
 
+    // // Debug untuk mengecek apakah parameter sudah diterima dengan benar
+    // echo "ID Gedung: $id_gedung<br>";
+    // echo "ID Tower: " . implode(', ', $id_towers) . "<br>";
+    // echo "ID Lift: " . implode(', ', $id_lifts) . "<br>";
 
-// Koneksi ke database
-$host = 'localhost'; // Ganti dengan host database lo
-$dbname = 'sinergi'; // Nama database
-$username = 'root'; // Username database
-$password = ''; // Password database (kosongkan jika tidak ada password)
+    // // Pastikan variabel sudah terdefinisi dan tidak kosong
+    // if (empty($id_towers) || empty($id_lifts) || !$id_gedung) {
+    //     echo "ID gedung, tower, atau lift belum didefinisikan dengan benar.";
+    //     exit;
+    // }
 
-try {
-    // Membuat koneksi ke database
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-    // Set mode error untuk menangkap masalah
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    // Tangkap error jika koneksi gagal
-    echo "Koneksi gagal: " . $e->getMessage();
-    exit;
-}
-// Ambil ID gedung, tower, dan lift dari URL
-$id_gedung = isset($_GET['id_gedung']) ? $_GET['id_gedung'] : null;
-$id_towers = isset($_GET['id_tower']) ? explode(',', $_GET['id_tower']) : [];
-$id_lifts = isset($_GET['id_lift']) ? explode(',', $_GET['id_lift']) : [];
+    // Query dengan placeholder dinamis
+    // $query = "
+    // SELECT 
+    //     g.id_gedung,
+    //     g.nama_gedung,
+    //     g.created_at AS tanggal_dibuat,
+    //     i.foto_instalasi,
+    //     i.nama_instalasi,
+    //     i.deskripsi AS deskripsi_instalasi,
+    //     ac.id_komponen,
+    //     k.nama_komponen,
+    //     ac.keterangan AS keterangan_komponen,
+    //     ac.foto_bukti,
+    //     ac.prioritas,
+    //     tc.nama_temuan,
+    //     sc.nama_solusi,
+    //     at.nama_tower,
+    //     al.lift_no
+    // FROM gedung g
+    // LEFT JOIN audit_tower at ON g.id_gedung = at.id_gedung
+    // LEFT JOIN audit_lift al ON at.id_tower = al.id_tower
+    // LEFT JOIN instalations i ON al.id_lift = i.id_lift
+    // LEFT JOIN audit_komponen ac ON al.id_lift = ac.id_lift
+    // LEFT JOIN komponen k ON ac.id_komponen = k.id_komponen
+    // LEFT JOIN temuan_komponen tc ON ac.id_temuan = tc.id_temuan
+    // LEFT JOIN solusi_komponen sc ON ac.id_solusi = sc.id_solusi
+    // WHERE g.id_gedung = :id_gedung
+    // AND at.id_tower IN (" . implode(',', array_map(function($i) { return ":id_tower_$i"; }, range(1, count($id_towers)))) . ")
+    // AND al.id_lift IN (" . implode(',', array_map(function($i) { return ":id_lift_$i"; }, range(1, count($id_lifts)))) . ")
+    // GROUP BY g.id_gedung, g.nama_gedung, i.foto_instalasi, i.nama_instalasi, i.deskripsi, ac.id_komponen, k.nama_komponen
+    // ";
+    // // Persiapkan array untuk parameter
+    // $params = [':id_gedung' => $id_gedung];
 
-// Debug untuk mengecek apakah parameter sudah diterima dengan benar
-echo "ID Gedung: $id_gedung<br>";
-echo "ID Tower: " . implode(', ', $id_towers) . "<br>";
-echo "ID Lift: " . implode(', ', $id_lifts) . "<br>";
+    // // Bind parameter untuk tower
+    // foreach ($id_towers as $key => $tower) {
+    //     $params[":id_tower_" . ($key + 1)] = $tower;
+    // }
 
-// Pastikan variabel sudah terdefinisi dan tidak kosong
-if (empty($id_towers) || empty($id_lifts) || !$id_gedung) {
-    echo "ID gedung, tower, atau lift belum didefinisikan dengan benar.";
-    exit;
-}
+    // // Bind parameter untuk lift
+    // foreach ($id_lifts as $key => $lift) {
+    //     $params[":id_lift_" . ($key + 1)] = $lift;
+    // }
 
-// Query dengan placeholder dinamis
-$query = "
-SELECT 
-    g.id_gedung,
-    g.nama_gedung,
-    g.created_at AS tanggal_dibuat,
-    i.foto_instalasi,
-    i.nama_instalasi,
-    i.deskripsi AS deskripsi_instalasi,
-    ac.id_komponen,
-    k.nama_komponen,
-    ac.keterangan AS keterangan_komponen,
-    ac.foto_bukti,
-    ac.prioritas,
-    tc.nama_temuan,
-    sc.nama_solusi,
-    at.nama_tower,
-    al.lift_no
-FROM gedung g
-LEFT JOIN audit_tower at ON g.id_gedung = at.id_gedung
-LEFT JOIN audit_lift al ON at.id_tower = al.id_tower
-LEFT JOIN instalations i ON al.id_lift = i.id_lift
-LEFT JOIN audit_komponen ac ON al.id_lift = ac.id_lift
-LEFT JOIN komponen k ON ac.id_komponen = k.id_komponen
-LEFT JOIN temuan_komponen tc ON ac.id_temuan = tc.id_temuan
-LEFT JOIN solusi_komponen sc ON ac.id_solusi = sc.id_solusi
-WHERE g.id_gedung = :id_gedung
-AND at.id_tower IN (" . implode(',', array_map(function($i) { return ":id_tower_$i"; }, range(1, count($id_towers)))) . ")
-AND al.id_lift IN (" . implode(',', array_map(function($i) { return ":id_lift_$i"; }, range(1, count($id_lifts)))) . ")
-GROUP BY g.id_gedung, g.nama_gedung, i.foto_instalasi, i.nama_instalasi, i.deskripsi, ac.id_komponen, k.nama_komponen
-";
+    // // Persiapkan dan eksekusi query
+    // $stmt = $pdo->prepare($query);
+    // $stmt->execute($params);
 
-// Persiapkan array untuk parameter
-$params = [':id_gedung' => $id_gedung];
+    // // Ambil hasil data
+    // $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Bind parameter untuk tower
-foreach ($id_towers as $key => $tower) {
-    $params[":id_tower_" . ($key + 1)] = $tower;
-}
-
-// Bind parameter untuk lift
-foreach ($id_lifts as $key => $lift) {
-    $params[":id_lift_" . ($key + 1)] = $lift;
-}
-
-// Persiapkan dan eksekusi query
-$stmt = $pdo->prepare($query);
-$stmt->execute($params);
-
-// Ambil hasil data
-$result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Cek hasilnya
-if ($result) {
-    print_r($result); // Atau manipulasi sesuai kebutuhan
-} else {
-    echo "Tidak ada data yang ditemukan.";
-}
-
-
+    // // Cek hasilnya
+    // if ($result) {
+    //     print_r($result); // Atau manipulasi sesuai kebutuhan
+    // } else {
+    //     echo "Tidak ada data yang ditemukan.";
+    // }
     // Tampilkan data untuk debugging (opsional)
-    foreach ($data as $row) {
-        // echo "Nama Gedung: " . $row['nama_gedung'] . "<br>";
-        // echo "Tanggal Dibuat: " . $row['tanggal_dibuat'] . "<br>";
-        echo "Foto Instalasi: " . $row['foto_instalasi'] . "<br>";
-        echo "Nama Instalasi: " . $row['nama_instalasi'] . "<br>";
-        echo "Deskripsi Instalasi: " . $row['deskripsi_instalasi'] . "<br>";
-        // echo "Nama Komponen: " . $row['nama_komponen'] . "<br>";
-        // echo "Nama Tower: " . $row['nama_tower'] . "<br>";
-        // echo "Nomor Lift: " . $row['lift_no'] . "<br>";
-        // echo "Keterangan Komponen: " . $row['keterangan_komponen'] . "<br>";
-        // echo "Nama Temuan: " . $row['nama_temuan'] . "<br>";
-        // echo "Nama Solusi: " . $row['nama_solusi'] . "<br><hr>";
+    // foreach ($data as $row) {
+    //     // echo "Nama Gedung: " . $row['nama_gedung'] . "<br>";
+    //     // echo "Tanggal Dibuat: " . $row['tanggal_dibuat'] . "<br>";
+    //     // echo "Nomor Lift: " . $row['lift_no'] . "<br>";
+    //     // echo "Foto Instalasi: " . $row['foto_instalasi'] . "<br>";
+    //     // echo "Nama Instalasi: " . $row['nama_instalasi'] . "<br>";
+    //     // echo "Deskripsi Instalasi: " . $row['deskripsi_instalasi'] . "<br>";
+    //     // echo "Nama Komponen: " . $row['nama_komponen'] . "<br>";
+    //     // echo "Nama Tower: " . $row['nama_tower'] . "<br>";
+    //     // echo "Keterangan Komponen: " . $row['keterangan_komponen'] . "<br>";
+    //     // echo "Nama Temuan: " . $row['nama_temuan'] . "<br>";
+    //     // echo "Nama Solusi: " . $row['nama_solusi'] . "<br><hr>";
+    // }
+
+//
+
+if (isset($_GET['id_gedung'])) {
+    $id_gedung = (int)$_GET['id_gedung'];
+$query = "
+    SELECT
+        gedung.id_gedung,
+        gedung.nama_gedung,
+        gedung.project_code,
+        gedung.address,
+        gedung.created_at AS gedung_created_at,
+
+        audit_tower.id_tower,
+        audit_tower.nama_tower,
+        audit_tower.pic,
+        audit_tower.jumlah_lantai,
+        audit_tower.created_at AS tower_created_at,
+
+        audit_lift.id_lift,
+        audit_lift.lift_no,
+        audit_lift.lift_brand,
+        audit_lift.lift_type,
+
+        audit_komponen.id AS audit_komponen_id,
+        audit_komponen.keterangan AS audit_komponen_keterangan,
+        audit_komponen.foto_bukti AS audit_komponen_foto_bukti,
+        audit_komponen.prioritas AS audit_komponen_prioritas,
+        temuan_komponen.nama_temuan AS audit_komponen_temuan,
+        solusi_komponen.nama_solusi AS audit_komponen_solusi,
+
+   (
+        SELECT GROUP_CONCAT(
+            CONCAT(
+                'ID: ', instalations.id_instalasi,
+                ', Foto: ', instalations.foto_instalasi,
+                ', Nama: ', instalations.nama_instalasi,
+                ', Deskripsi: ', instalations.deskripsi
+            ) SEPARATOR ' | '
+        )
+        FROM instalations
+        WHERE instalations.id_lift = audit_lift.id_lift
+    ) AS instalasi_data,
+
+        komponen.id_komponen,
+        komponen.code_komponen,
+        komponen.nama_komponen,
+        komponen.keterangan AS komponen_keterangan
+        
+
+    FROM audit_komponen
+
+    -- Join ke table tower
+    LEFT JOIN gedung ON gedung.id_gedung = audit_komponen.id_gedung
+
+
+    -- Join ke table audit_komponen
+    LEFT JOIN audit_tower ON audit_komponen.id_tower = audit_tower.id_tower
+
+    -- Join ke table lift
+    LEFT JOIN audit_lift ON audit_komponen.id_lift = audit_lift.id_lift
+
+    -- Join ke table temuan_komponen
+    LEFT JOIN temuan_komponen ON audit_komponen.id_temuan = temuan_komponen.id_temuan
+
+    -- Join ke table solusi_komponen
+    LEFT JOIN solusi_komponen ON audit_komponen.id_solusi = solusi_komponen.id_solusi
+
+ 
+
+    -- Join ke table komponen
+    LEFT JOIN komponen ON audit_komponen.id_komponen = komponen.id_komponen
+
+    WHERE audit_komponen.id_gedung = ?
+    ORDER BY komponen.id_komponen ASC
+  ";
+  // Eksekusi query
+  $stmt = $conn->prepare($query);
+  $stmt->bind_param('i', $id_gedung);
+  $stmt->execute();
+  $results = $stmt->get_result();
+  // Ambil data
+  if ($results->num_rows > 0) {
+    // Proses hasil query menjadi array
+    $data = [];
+    $lift_komp = [];
+    $lift = [];
+    $komp_keterangan = [];
+    $komp_keterangan_tes = [];
+
+    $test = [];
+    while ($row = $results->fetch_assoc()) {
+      // Menambahkan semua data ke array $data
+
+      $data[] = $row;
+      echo '<pre>';
+      print_r($row);
+      echo '</pre>';
+      die();
+
+
+      // Ambil keterangan dan no_lift
+      $keterangan = $row['komponen_keterangan'];
+      $no_lift = $row['lift_no'];
+
+      $komp_keterangan[$keterangan][] = $row;
+      $lift[$no_lift][] = $row;
+      // Jika sudah ada lift dengan nomor yang sama, tambahkan entri keterangan baru
+      if (!isset($lift_komp[$no_lift])) {
+        $lift_komp[$no_lift] = [];
+      }
+
+      // Menambahkan data ke keterangan yang sesuai
+      if (!isset($lift_komp[$no_lift][$keterangan])) {
+        $lift_komp[$no_lift][$keterangan] = [];
+      }
+      // Tambahkan row ke dalam keterangan
+      $lift_komp[$no_lift][$keterangan][] = $row;
     }
-
-
+  } else {
+    echo "Data tidak ditemukan.";
+  }
 
 
     // Buat presentasi baru
@@ -150,7 +263,13 @@ if ($result) {
         ->setOffsetY(450); // Posisi vertikal (dari atas)
 
     // Menambahkan teks langsung
-    $text->createTextRun($row['tanggal_dibuat'])->getFont()->setSize(12)->setColor(new Color('FF000000')); // Styling teks
+    if (isset($data['tanggal_dibuat'])) {
+        $text->createTextRun($data['tanggal_dibuat'])->getFont()->setSize(12)->setColor(new Color('FF000000')); // Styling teks
+    } else {
+        // Tangani jika tanggal_dibuat tidak ada atau kosong
+        $text->createTextRun('Tanggal tidak tersedia')->getFont()->setSize(12)->setColor(new Color('FF000000'));
+    }
+    
 
     // Membuat Slide ke-2
     $slide2 = $presentation->createSlide(); // Tambah slide kedua
@@ -403,5 +522,6 @@ if (is_writable($folder)) {
     }
 } else {
     echo "Folder '$folder' tidak memiliki izin tulis. Pastikan folder dapat diakses untuk menulis file.";
+}
 }
 ?>
