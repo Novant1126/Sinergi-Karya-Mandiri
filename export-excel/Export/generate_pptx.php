@@ -113,6 +113,7 @@ use PhpOffice\PhpPresentation\Style\Alignment;
 
 if (isset($_GET['id_gedung'])) {
     $id_gedung = (int)$_GET['id_gedung'];
+
 $query = "
     SELECT
         gedung.id_gedung,
@@ -201,13 +202,8 @@ $query = "
     $test = [];
     while ($row = $results->fetch_assoc()) {
       // Menambahkan semua data ke array $data
-
       $data[] = $row;
-      echo '<pre>';
-      print_r($row);
-      echo '</pre>';
-      die();
-
+  
 
       // Ambil keterangan dan no_lift
       $keterangan = $row['komponen_keterangan'];
@@ -226,10 +222,26 @@ $query = "
       }
       // Tambahkan row ke dalam keterangan
       $lift_komp[$no_lift][$keterangan][] = $row;
+      if (isset($row['instalasi_data'])) {
+        // Proses instalasi_data
+        $instalasi_data = $row['instalasi_data'];
+    } 
+    
     }
   } else {
     echo "Data tidak ditemukan.";
   }
+
+
+//   echo '<pre>';
+//   print_r($row);
+//   echo '</pre>';
+//   die();
+
+ 
+
+
+
 
 
     // Buat presentasi baru
@@ -285,224 +297,184 @@ $query = "
         ->setOffsetY(0); // Gambar di posisi awal
 
     // Loop untuk menambahkan slide untuk setiap instalasi
-// Slide pertama
-    $slide3 = $presentation->createSlide(); // Buat slide baru untuk instalasi pertama
-
-    // Gambar di slide ke-3
-    $shape3 = $slide3->createDrawingShape();
-    $shape3->setName('Full Slide Image 3')
-        ->setDescription('Gambar Full Slide 3')
-        ->setPath(__DIR__ . '/img/3.png') // Pastikan gambar ada di folder img
-        ->setWidth(960) // Sesuaikan lebar (16:9)
-        ->setHeight(540) // Sesuaikan tinggi (16:9)
-        ->setOffsetX(0)
-        ->setOffsetY(0); // Gambar di posisi awal
-
-    // Menambahkan teks di slide ke-3
-    $text = $slide3->createRichTextShape();
-    $text->setHeight(50)
-        ->setWidth(960);
-
-    // Set posisi teks (sesuaikan dengan posisi yang diinginkan)
-    $text->setOffsetX(0) // Posisi horizontal (dari kiri)
-        ->setOffsetY(35); // Posisi vertikal (dari atas)
-    $text->getActiveParagraph()->getAlignment()->setHorizontal(\PhpOffice\PhpPresentation\Style\Alignment::HORIZONTAL_CENTER);
-    // Menambahkan teks ke dalam slide
-    $text->createTextRun('UNIT LIFT TERPASANG')
-        ->getFont()
-        ->setSize(20) // Ukuran font
-        ->setColor(new Color('FF000000')) // Warna font
-        ->setName('Arial') // Mengatur font ke Arial
-        ->setBold(true); // Membuat font menjadi bold
-
-    // Menambahkan data instalasi ke dalam slide
-    foreach ($data as $key => $row) {
-        // Setiap 2 data instalasi akan tampil dalam 1 slide
-        if ($key % 2 == 0 && $key != 0) {
-            // Jika sudah ada 2 data, buat slide baru
-            $slide3 = $presentation->createSlide();
-            // Gambar di slide ke-3
-            $shape3 = $slide3->createDrawingShape();
-            $shape3->setName('Full Slide Image 3')
-                ->setDescription('Gambar Full Slide 3')
-                ->setPath(__DIR__ . '/img/3.png') // Pastikan gambar ada di folder img
-                ->setWidth(960) // Sesuaikan lebar (16:9)
-                ->setHeight(540) // Sesuaikan tinggi (16:9)
-                ->setOffsetX(0)
-                ->setOffsetY(0); // Gambar di posisi awal
-
-            // Menambahkan teks di slide ke-3
-            $text = $slide3->createRichTextShape();
-            $text->setHeight(50)
-                ->setWidth(960);
-
-            // Set posisi teks (sesuaikan dengan posisi yang diinginkan)
-            $text->setOffsetX(0) // Posisi horizontal (dari kiri)
-                ->setOffsetY(35); // Posisi vertikal (dari atas)
-            $text->getActiveParagraph()->getAlignment()->setHorizontal(\PhpOffice\PhpPresentation\Style\Alignment::HORIZONTAL_CENTER);
-            // Menambahkan teks ke dalam slide
-            $text->createTextRun('UNIT LIFT TERPASANG')
-                ->getFont()
-                ->setSize(20) // Ukuran font
-                ->setColor(new Color('FF000000')) // Warna font
-                ->setName('Arial') // Mengatur font ke Arial
-                ->setBold(true); // Membuat font menjadi bold
-        }
-
-
-        $shape1 = $slide3->createDrawingShape();
-        $shape1->setName('Installation Image ' . ($key + 1))
-            ->setDescription('Gambar Instalasi ' . ($key + 1))
-            ->setPath(__DIR__ . '/../Proses/uploads/foto_instalasi/' . $row['foto_instalasi']) // Pastikan path gambar benar
-            ->setWidth(480) // Setengah dari slide (16:9)
-            ->setHeight(270) // Proporsional
-            ->setOffsetX(10 + ($key % 2) * 490) // Posisi gambar secara berdampingan
-            ->setOffsetY(10); // Posisi vertikal
-
-        // Teks instalasi
-        $text1 = $slide3->createRichTextShape();
-        $text1->setHeight(30)
-            ->setWidth(350)
-            ->setOffsetX(105 + ($key % 2) * 400) // Posisi teks agar sejajar dengan gambar
-            ->setOffsetY(440); // Posisi teks di bawah gambar
-        $text1->getActiveParagraph()->getAlignment()->setHorizontal(\PhpOffice\PhpPresentation\Style\Alignment::HORIZONTAL_CENTER);
-        $text1->createTextRun($row['nama_instalasi'])->getFont()->setSize(16)->setBold(true)->setColor(new Color('FF000000'));
-        $text2 = $slide3->createRichTextShape();
-        $text2->setHeight(30)
-            ->setWidth(350)
-            ->setOffsetX(105 + ($key % 2) * 400) // Posisi teks sejajar dengan teks pertama
-            ->setOffsetY(470); // Posisi teks sedikit lebih bawah
-        $text2->getActiveParagraph()->getAlignment()->setHorizontal(\PhpOffice\PhpPresentation\Style\Alignment::HORIZONTAL_CENTER);
-        $text2->createTextRun($row['deskripsi_instalasi'])
-            ->getFont()->setSize(14) // Ukuran font lebih kecil
-            ->setColor(new Color('FF000000')); // Warna teks lebih terang untuk perbedaan
-    }
-
-
-    // Mengecek apakah ada data
     if ($data) {
-        // Loop untuk setiap temuan
-        $slide4 = $presentation->createSlide(); // Buat slide baru untuk instalasi pertama
-
-        // Gambar di slide ke-3
-        $shape4 = $slide4->createDrawingShape();
-        $shape4->setName('Full Slide Image 3')
-            ->setDescription('Gambar Full Slide 3')
-            ->setPath(__DIR__ . '/img/4.png') // Pastikan gambar ada di folder img
-            ->setWidth(960) // Sesuaikan lebar (16:9)
-            ->setHeight(540) // Sesuaikan tinggi (16:9)
-            ->setOffsetX(0)
-            ->setOffsetY(0); // Gambar di posisi awal
-
-        // Menambahkan teks di slide ke-3
-        $text4 = $slide4->createRichTextShape();
-        $text4->setHeight(50)
-            ->setWidth(960);
-        $text4->setOffsetX(0) // Posisi horizontal (dari kiri)
-            ->setOffsetY(35); // Posisi vertikal (dari atas)
-        $text4->getActiveParagraph()->getAlignment()->setHorizontal(\PhpOffice\PhpPresentation\Style\Alignment::HORIZONTAL_CENTER);
-        // Menambahkan teks ke dalam slide
-        $text4->createTextRun('TEMUAN')
-            ->getFont()
-            ->setSize(20) // Ukuran font
-            ->setColor(new Color('FF000000')) // Warna font
-            ->setName('Arial') // Mengatur font ke Arial
-            ->setBold(true); // Membuat font menjadi bold
-
-        // Array untuk menyimpan id_komponen yang sudah diproses
-        $processed_komponen = []; // Pastikan array ini dideklarasikan di luar loop
-        $invalid_ids = [1];
-        // Loop untuk menambahkan data ke slide
-        foreach ($data as $key => $row) {
-            // Cek apakah id_komponen sudah pernah diproses
-            if (in_array($row['id_komponen'], $processed_komponen)) {
-                // Lewatkan jika id_komponen sudah ada dalam array
-                continue;
-            }
-            // Cek apakah id_temuan atau id_solusi ada dalam array dan memiliki nilai
-            if ($row['nama_temuan'] == 'Tidak Ada' || $row['nama_solusi'] == 'Tidak Ada') {
-                continue; // Lewatkan data yang memiliki "Tidak Ada"
-            }
-
-
-            // Tambahkan id_komponen ke dalam array untuk menandakan sudah diproses
-            $processed_komponen[] = $row['id_komponen'];
-
-            // Setiap 2 data instalasi akan tampil dalam 1 slide
-            if ($key % 2 == 0 && $key != 0) {
-                // Jika sudah ada 2 data, buat slide baru
-                $slide4 = $presentation->createSlide();
-
+        $uniqueData = [];
+        $counter = 0;
+        $slide3 = $presentation->createSlide(); // Buat slide pertama
+        
+        foreach ($data as $index => $row) {
+            $uniqueKey = $row['foto_instalasi']; // Penanda unik
+            
+            // Cek jika instalasi belum ada di $uniqueData
+            if (!isset($uniqueData[$uniqueKey])) {
+                $uniqueData[$uniqueKey] = $row; // Tambahkan data unik
+                $counter++; // Tambahkan counter
+                
+                // Jika lebih dari 2 instalasi, buat slide baru
+                if ($counter > 2) {
+                    $slide3 = $presentation->createSlide();
+                    $counter = 1; // Reset counter untuk slide baru
+                }
+    
                 // Gambar di slide
-                $shape4 = $slide4->createDrawingShape();
-                $shape4->setName('Full Slide Image 3')
+                $shape3 = $slide3->createDrawingShape();
+                $shape3->setName('Full Slide Image 3')
                     ->setDescription('Gambar Full Slide 3')
-                    ->setPath(__DIR__ . '/img/4.png') // Pastikan gambar ada di folder img
-                    ->setWidth(960) // Sesuaikan lebar (16:9)
-                    ->setHeight(540) // Sesuaikan tinggi (16:9)
+                    ->setPath(__DIR__ . '/img/3.png')
+                    ->setWidth(960)
+                    ->setHeight(540)
                     ->setOffsetX(0)
-                    ->setOffsetY(0); // Gambar di posisi awal
-
-                // Menambahkan teks di slide
-                $text4 = $slide4->createRichTextShape();
-                $text4->setHeight(50)
-                    ->setWidth(960);
-                $text4->setOffsetX(0) // Posisi horizontal (dari kiri)
-                    ->setOffsetY(35); // Posisi vertikal (dari atas)
-                $text4->getActiveParagraph()->getAlignment()->setHorizontal(\PhpOffice\PhpPresentation\Style\Alignment::HORIZONTAL_CENTER);
-                // Menambahkan teks ke dalam slide
-                $text4->createTextRun('TEMUAN')
-                    ->getFont()
-                    ->setSize(20) // Ukuran font
-                    ->setColor(new Color('FF000000')) // Warna font
-                    ->setName('Arial') // Mengatur font ke Arial
-                    ->setBold(true); // Membuat font menjadi bold
+                    ->setOffsetY(0);
+    
+                // Menambahkan teks utama di slide
+                $text = $slide3->createRichTextShape();
+                $text->setHeight(50)
+                    ->setWidth(960)
+                    ->setOffsetX(0)
+                    ->setOffsetY(35);
+                $text->getActiveParagraph()->getAlignment()->setHorizontal(\PhpOffice\PhpPresentation\Style\Alignment::HORIZONTAL_CENTER);
+                $text->createTextRun('UNIT LIFT TERPASANG')->getFont()->setSize(20)->setColor(new Color('FF000000'))->setName('Arial')->setBold(true);
+                
+                // Ambil nama gambar dari database
+                
+                $imagePath = realpath(__DIR__ . '/../Proses/uploads/foto_instalasi/' . $row['foto_instalasi']);
+    
+                // Cek apakah gambar ada
+                // if (!file_exists($imagePath)) {
+                //     die("File gambar tidak ditemukan: " . $imagePath);
+                // }
+    
+                // Gambar di slide
+                $shapeinstalasi = $slide3->createDrawingShape(); // Gambar baru di atas nama instalasi
+                $shapeinstalasi->setName('Image Above Installation')
+                    ->setDescription('Gambar di atas Nama Instalasi')
+                    ->setPath($imagePath) // Path gambar dari database
+                    ->setWidth(230) // Ukuran gambar yang lebih kecil
+                    ->setHeight(270)
+                    ->setOffsetX(105) // Posisi gambar di atas teks nama_instalasi
+                    ->setOffsetY(150); // Offset diatur supaya berada di atas nama_instalasi
+    
+                // Teks nama instalasi
+                $text1 = $slide3->createRichTextShape();
+                $text1->setHeight(30)
+                    ->setWidth(350)
+                    ->setOffsetX(105 + (($counter - 1) % 2) * 400) // Posisi teks (bergantian)
+                    ->setOffsetY(440);
+                $text1->getActiveParagraph()->getAlignment()->setHorizontal(\PhpOffice\PhpPresentation\Style\Alignment::HORIZONTAL_CENTER);
+                $text1->createTextRun($row['nama_instalasi'])->getFont()->setSize(16)->setBold(true)->setColor(new Color('FF000000'));
+    
+                // Teks deskripsi instalasi
+                $text2 = $slide3->createRichTextShape();
+                $text2->setHeight(30)
+                    ->setWidth(350)
+                    ->setOffsetX(105 + (($counter - 1) % 2) * 400)
+                    ->setOffsetY(470);
+                $text2->getActiveParagraph()->getAlignment()->setHorizontal(\PhpOffice\PhpPresentation\Style\Alignment::HORIZONTAL_CENTER);
+                $text2->createTextRun($row['deskripsi_instalasi'])->getFont()->setSize(14)->setColor(new Color('FF000000'));
             }
-
-            // Teks instalasi (Komponen : Temuan)
-            $text4 = $slide4->createRichTextShape();
-            $text4->setHeight(25)
-                ->setWidth(400)
-                ->setOffsetX(65 + ($key % 2) * 427) // Posisi teks agar sejajar dengan gambar
-                ->setOffsetY(408); // Posisi teks di bawah gambar
-            $text4->getActiveParagraph()->getAlignment()->setHorizontal(\PhpOffice\PhpPresentation\Style\Alignment::HORIZONTAL_CENTER);
-            $text4->createTextRun($row['nama_komponen'] . ' : ' . $row['nama_temuan'])->getFont()->setSize(12)->setBold(true)->setColor(new Color('FF000000'));
-
-            // Teks Tower
-            $text5 = $slide4->createRichTextShape();
-            $text5->setHeight(25)
-                ->setWidth(400)
-                ->setOffsetX(65 + ($key % 2) * 427) // Posisi teks sejajar dengan teks pertama
-                ->setOffsetY(433); // Posisi teks sedikit lebih bawah
-            $text5->getActiveParagraph()->getAlignment()->setHorizontal(\PhpOffice\PhpPresentation\Style\Alignment::HORIZONTAL_CENTER);
-            $text5->createTextRun('Tower: ' . $row['nama_tower'])
-                ->getFont()->setSize(12) // Ukuran font lebih kecil
-                ->setColor(new Color('FF000000')); // Warna teks lebih terang untuk perbedaan
-
-            // Teks Prioritas
-            $text6 = $slide4->createRichTextShape();
-            $text6->setHeight(25)
-                ->setWidth(400)
-                ->setOffsetX(65 + ($key % 2) * 427) // Posisi teks sejajar dengan teks pertama
-                ->setOffsetY(458); // Posisi teks sedikit lebih bawah
-            $text6->getActiveParagraph()->getAlignment()->setHorizontal(\PhpOffice\PhpPresentation\Style\Alignment::HORIZONTAL_CENTER);
-            $text6->createTextRun($row['prioritas'])
-                ->getFont()->setSize(12) // Ukuran font lebih kecil
-                ->setColor(new Color('FF000000')); // Warna teks lebih terang untuk perbedaan
-
-            // Teks Solusi
-            $text7 = $slide4->createRichTextShape();
-            $text7->setHeight(25)
-                ->setWidth(400)
-                ->setOffsetX(65 + ($key % 2) * 427) // Posisi teks sejajar dengan teks pertama
-                ->setOffsetY(483); // Posisi teks sedikit lebih bawah
-            $text7->getActiveParagraph()->getAlignment()->setHorizontal(\PhpOffice\PhpPresentation\Style\Alignment::HORIZONTAL_CENTER);
-            $text7->createTextRun('Solusi: ' . $row['nama_solusi'])
-                ->getFont()->setSize(12) // Ukuran font lebih kecil
-                ->setColor(new Color('FF000000')); // Warna teks lebih terang untuk perbedaan
         }
-
     }
+
+
+//
+// Mengecek apakah ada data
+$processed_komponen = []; // Array untuk track komponen yang sudah diproses
+$key = 0; // Counter buat posisi data
+// Path gambar background
+$imageBackground = __DIR__ . '/img/4.png';
+if (!file_exists($imageBackground)) {
+    die("Gambar background tidak ditemukan: $imageBackground");
+}
+
+// Loop data untuk menambahkan ke slide
+foreach ($data as $row) {
+    // Path untuk gambar foto_bukti di database
+    $imagedatabase = realpath(__DIR__ . '/../Proses/' . $row['foto_bukti']);
+    
+    // Pengecekan file gambar
+    if (!file_exists($imagedatabase)) {
+        die("Gambar foto_bukti tidak ditemukan untuk ID Komponen: " . $row['id_komponen']);
+    }
+
+    // Skip kalau komponen udah diproses atau temuan/solusi tidak valid
+    if (in_array($row['id_komponen'], $processed_komponen) || 
+        $row['nama_temuan'] === 'Tidak Ada' || 
+        $row['nama_solusi'] === 'Tidak Ada') {
+        continue;
+    }
+
+    // Tambahin ID ke processed list
+    $processed_komponen[] = $row['id_komponen'];
+
+    // Buat slide baru setiap 2 data
+    if ($key % 2 === 0) {
+        $slide4 = $presentation->createSlide();
+
+        // Tambahkan background gambar
+        $shape4 = $slide4->createDrawingShape();
+        $shape4->setPath($imageBackground)
+            ->setWidth(960)
+            ->setHeight(540)
+            ->setOffsetX(0)
+            ->setOffsetY(0);
+
+        // Tambahkan teks "TEMUAN"
+        $textTitle = $slide4->createRichTextShape();
+        $textTitle->setHeight(50)
+            ->setWidth(960)
+            ->setOffsetX(0)
+            ->setOffsetY(35);
+        $textTitle->getParagraph(0)->getAlignment()->setHorizontal(\PhpOffice\PhpPresentation\Style\Alignment::HORIZONTAL_CENTER);
+        $textTitle->createTextRun('TEMUAN')
+            ->getFont()
+            ->setSize(20)
+            ->setBold(true)
+            ->setColor(new Color('FF000000'));
+    }
+
+    // Posisi dinamis berdasarkan key (kiri atau kanan)
+    $offsetX = 65 + ($key % 2) * 427;
+    $offsetYBase = 408;
+
+    // Menambahkan gambar dari path foto_bukti
+    $shapefotobukti = $slide4->createDrawingShape();
+    $shapefotobukti->setPath($imagedatabase)
+        ->setWidth(290) 
+        ->setHeight(310)
+        ->setOffsetX(110) 
+        ->setOffsetY(98);
+
+    // Tambahkan detail data lainnya
+    $textKomponen = $slide4->createRichTextShape();
+    $textKomponen->setHeight(25)->setWidth(400)
+        ->setOffsetX($offsetX)->setOffsetY($offsetYBase);
+    $textKomponen->getParagraph(0)->getAlignment()->setHorizontal(\PhpOffice\PhpPresentation\Style\Alignment::HORIZONTAL_CENTER);
+    $textKomponen->createTextRun($row['nama_komponen'] . ' : ' . $row['nama_temuan'])
+        ->getFont()->setSize(12)->setBold(true)->setColor(new Color('FF000000'));
+
+    $textTower = $slide4->createRichTextShape();
+    $textTower->setHeight(25)->setWidth(400)
+        ->setOffsetX($offsetX)->setOffsetY($offsetYBase + 25);
+    $textTower->getParagraph(0)->getAlignment()->setHorizontal(\PhpOffice\PhpPresentation\Style\Alignment::HORIZONTAL_CENTER);
+    $textTower->createTextRun('Tower: ' . $row['nama_tower'])
+        ->getFont()->setSize(12)->setColor(new Color('FF000000'));
+
+    $textPrioritas = $slide4->createRichTextShape();
+    $textPrioritas->setHeight(25)->setWidth(400)
+        ->setOffsetX($offsetX)->setOffsetY($offsetYBase + 50);
+    $textPrioritas->getParagraph(0)->getAlignment()->setHorizontal(\PhpOffice\PhpPresentation\Style\Alignment::HORIZONTAL_CENTER);
+    $textPrioritas->createTextRun('Prioritas: ' . $row['prioritas'])
+        ->getFont()->setSize(12)->setColor(new Color('FF000000'));
+
+    $textSolusi = $slide4->createRichTextShape();
+    $textSolusi->setHeight(25)->setWidth(400)
+        ->setOffsetX($offsetX)->setOffsetY($offsetYBase + 75);
+    $textSolusi->getParagraph(0)->getAlignment()->setHorizontal(\PhpOffice\PhpPresentation\Style\Alignment::HORIZONTAL_CENTER);
+    $textSolusi->createTextRun('Solusi: ' . $row['nama_solusi'])
+        ->getFont()->setSize(12)->setColor(new Color('FF000000'));
+
+    $key++;
+}
 
 
 // Pastikan folder 'PPTX' ada dan memiliki izin tulis
@@ -514,8 +486,8 @@ if (is_writable($folder)) {
     try {
         // Menyimpan file PPTX ke dalam folder 'PPTX' dengan nama 'Audit.pptx'
         $oWriter = IOFactory::createWriter($presentation, 'PowerPoint2007');
-        $oWriter->save($folder . '/Audit-1.pptx');
-        echo "File PPTX berhasil disimpan di " . $folder . "/Audit.pptx";
+        $oWriter->save($folder . '/Audit_1.pptx');
+        echo "File PPTX berhasil disimpan di " . $folder . "/Audit_1.pptx";
     } catch (Exception $e) {
         // Menangkap error dan menampilkan pesan kesalahan
         echo 'Error: ' . $e->getMessage();
