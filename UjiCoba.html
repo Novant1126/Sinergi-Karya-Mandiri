@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate PPTX with JavaScript</title>
+    
+    <!-- Menambahkan JSZip sebelum PptxGenJS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.10.0/dist/pptxgen.min.js"></script>
+</head>
+<body>
+    <button id="generatePptx">Generate PPTX</button>
+
+    <script>
+        document.getElementById('generatePptx').addEventListener('click', function() {
+            // Membuat objek presentasi
+            let pptx = new PptxGenJS();
+            
+            // Menambahkan slide
+            let slide = pptx.addSlide();
+            
+            // Menambahkan teks ke slide
+            slide.addText('Hello, PPTX!', { x: 1, y: 1, fontSize: 18, color: '000000' });
+
+            // Memicu pengunduhan file PPTX
+            pptx.writeFile({ fileName: "Generated_Presentation.pptx" })
+                .then(function() {
+                    console.log("PPTX file generated successfully!");
+                })
+                .catch(function(err) {
+                    console.error("Error generating PPTX:", err);
+                });
+        });
+    </script>
+</body>
+</html>
