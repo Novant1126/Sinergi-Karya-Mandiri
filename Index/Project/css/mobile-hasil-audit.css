@@ -1,0 +1,105 @@
+
+        /* Responsiveness: */
+        @media (max-width: 768px) {
+            .table-responsive {
+                overflow-x: auto;
+            }
+
+            table {
+                width: 100%;
+                font-size: 12px;
+                /* Menyesuaikan ukuran font agar lebih pas di layar kecil */
+            }
+
+            th,
+            td {
+                padding: 8px;
+            }
+
+            .img-thumbnail {
+                width: 50px;
+                height: 50px;
+            }
+
+            .truncate-text {
+                max-width: 100px;
+                /* Sesuaikan dengan ukuran perangkat kecil */
+            }
+
+            /* Membuat gambar pada modal lebih besar pada perangkat mobile */
+            .modal-body img {
+                max-width: 100%;
+                height: auto;
+            }
+
+            /* Agar kolom tabel lebih mudah dibaca pada layar kecil */
+            th,
+            td {
+                text-align: left;
+                /* Menyelaraskan konten ke kiri untuk kenyamanan pembacaan */
+            }
+
+            .modal-dialog {
+                max-width: 90%;
+                /* Mengatur lebar modal untuk perangkat kecil */
+            }
+        }
+
+        /* Responsiveness untuk lebih besar dari 768px */
+        @media (min-width: 769px) {
+            table {
+                font-size: 14px;
+            }
+
+            .img-thumbnail {
+                width: 70px;
+                height: 70px;
+            }
+        }
+
+        th,
+        td {
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            padding: 10px;
+        }
+
+        th {
+            text-align: center;
+            background-color: #f8f9fa;
+        }
+
+        td {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .truncate-text {
+            max-width: 150px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .img-thumbnail {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            cursor: pointer;
+        }
+
+        .modal-dialog {
+            max-width: 80%;
+            margin: 30px auto;
+        }
+
+        .modal-body img {
+            max-width: 100%;
+            height: auto;
+        }
+          /* Scroll untuk tabel jika data banyak */
+          .table-scroll {
+            max-height: 400px; /* Sesuaikan dengan tinggi yang diinginkan */
+            /* overflow-y: auto; */
+        }
