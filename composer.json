@@ -1,0 +1,15 @@
+{
+    "name": "novan/sinergi",
+    "description": "sistem audit",
+    "autoload": {
+        "psr-4": {
+            "Novan\\Sinergi\\": "src/"
+        }
+    },
+    "require": {
+        "phpoffice/phpspreadsheet": "3.7",
+        "phpoffice/phppresentation": "^0.9.0",
+        "phpoffice/phpword": "^1.3"
+    },
+    "version": "1.0.0"
+}
